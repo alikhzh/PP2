@@ -2,7 +2,7 @@ import psycopg2
 
 DB_HOST = "localhost"
 DB_NAME = "phonebook"
-DB_USER = "altynajzumagalieva"
+DB_USER = "alikh"
 DB_PASSWORD = "Alixan08!"
 
 try:
