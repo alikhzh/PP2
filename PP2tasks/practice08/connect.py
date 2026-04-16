@@ -1,15 +1,15 @@
 import psycopg2
-import config
 
 def connect():
     try:
         conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password
+            host="localhost",
+            database="phonebook",
+            user="alikh",
+            password="Alixan08!",
+            port="5432"
         )
         return conn
     except Exception as e:
-        print("Connection failed:", e)
+        print("Database connection error:", e)
         return None
