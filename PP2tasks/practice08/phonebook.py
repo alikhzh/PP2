@@ -58,14 +58,28 @@ def add_or_update():
 def delete_contact():
     value = input("Enter name or phone to delete: ")
 
+<<<<<<< HEAD
     conn=connect()
     if conn is None:
         return conn
     cur=conn.cursor()
     cur.execute("CALL delete_contact(%s);" (value,))
     cur.commit()
+=======
+    conn = connect()
+    if conn is None:
+        return
+
+    cur = conn.cursor()
+
+    cur.execute("CALL delete_contact(%s);", (value,))
+
+    conn.commit()
+
+>>>>>>> 9beaaecf8d26e424fd52e3f05111f151c204cd96
     cur.close()
     conn.close()
+
     print("Deleted if existed!")
 
 
