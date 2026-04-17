@@ -1,66 +1,30 @@
 import pygame
-import datetime
-import os
+import sys
+from clock import MickeyClock
 
-pygame.init()
-
-screen = pygame.display.set_mode((1200, 700))
-pygame.display.set_caption("Mickey's clock")
-clock = pygame.time.Clock()
-
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-images_dir = os.path.join(current_dir, 'images')
-
-clc_image = pygame.image.load(os.path.join(images_dir, 'clock.png'))
-clc_image = pygame.transform.scale(clc_image, (1100, 700))
-
-mick_img = pygame.image.load(os.path.join(images_dir, 'mickey.png'))
-mick_img = pygame.transform.scale(mick_img, (400, 400))
-
-right = pygame.image.load(os.path.join(images_dir, 'hand_right.png'))
-right = pygame.transform.scale(right, (180, 180))
-
-left = pygame.image.load(os.path.join(images_dir, 'hand_left.png'))
-left = pygame.transform.scale(left, (180, 180))
-
-def rotate(image, angle, x, y):
-    rotated_image = pygame.transform.rotate(image, -angle)
-    new_rect = rotated_image.get_rect(center=(x, y))
-    return rotated_image, new_rect
-
-center_x = 1200 // 2
-center_y = 700 // 2
-
-clock_x = (1200 - 1100) // 2
-clock_y = (700 - 700) // 2
-
-mickey_x = center_x - (400 // 2)
-mickey_y = center_y - (400 // 2)
-
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+def main():
+    pygame.init()
     
-    now = datetime.datetime.now()
-    minutes = now.minute
-    seconds = now.second
+    # Square window to match the clock face
+    WIDTH, HEIGHT = 1536, 1024
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Mickey Mouse Clock")
     
-    m_angle = minutes * 6
-    s_angle = seconds * 6
-    
-    rotated_right, right_rect = rotate(right, m_angle, center_x, center_y)
-    rotated_left, left_rect = rotate(left, s_angle, center_x, center_y)
-    
-    screen.fill((255, 255, 255))
-    screen.blit(clc_image, (clock_x, clock_y))
-    screen.blit(mick_img, (mickey_x, mickey_y))
-    screen.blit(rotated_right, right_rect.topleft)
-    screen.blit(rotated_left, left_rect.topleft)
-    
-    pygame.display.flip()
-    clock.tick(60)
+    clock_app = MickeyClock(WIDTH, HEIGHT)
+    timer = pygame.time.Clock()
 
-pygame.quit()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        clock_app.render(screen)
+        pygame.display.flip()
+        timer.tick(50)
+
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
