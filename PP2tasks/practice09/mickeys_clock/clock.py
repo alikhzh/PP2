@@ -17,8 +17,7 @@ class MickeyClock:
         self.mickey_body = pygame.transform.scale(self.mickey_body, (800, 600)) 
         self.mickey_rect = self.mickey_body.get_rect(center=self.center)
         
-        # You no longer need to force these into squares if using the pivot function below.
-        # Just scale them to the desired length of the hand.
+      
         self.min_hand_orig = pygame.image.load(os.path.join(img_dir, "hand_right_centered.png")).convert_alpha()
         self.min_hand_orig = pygame.transform.scale(self.min_hand_orig, (300, 350)) # Adjust to fit your clock
         
