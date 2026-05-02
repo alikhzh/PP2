@@ -1,9 +1,8 @@
--- ============================================================
--- procedures.sql  –  PL/pgSQL objects for TSIS 1
--- ============================================================
+DROP FUNCTION IF EXISTS search_contacts(text);
+DROP FUNCTION IF EXISTS get_contacts_paginated(int, int);
+DROP PROCEDURE IF EXISTS add_phone(varchar, varchar, varchar);
+DROP PROCEDURE IF EXISTS move_to_group(varchar, varchar);
 
--- 1. add_phone
--- find the contact by name and add a new phone number to them
 CREATE OR REPLACE PROCEDURE add_phone(
     p_contact_name VARCHAR,
     p_phone        VARCHAR,
@@ -34,8 +33,6 @@ BEGIN
 END;
 $$;
 
--- 2. move_to_group
--- move a contact to a group, and make the group if it's missing
 CREATE OR REPLACE PROCEDURE move_to_group(
     p_contact_name VARCHAR,
     p_group_name   VARCHAR
@@ -67,8 +64,6 @@ BEGIN
 END;
 $$;
 
--- 3. search_contacts
--- search across everything: name, email, phones
 CREATE OR REPLACE FUNCTION search_contacts(p_query TEXT)
 RETURNS TABLE (
     id         INTEGER,
@@ -101,23 +96,25 @@ BEGIN
     ORDER BY c.first_name, c.last_name;
 END;
 $$;
-
--- 4. get_contacts_paginated (used by paginated_browse)
-CREATE OR REPLACE FUNCTION get_contacts_paginated(p_limit INTEGER, p_offset INTEGER)
+CREATE OR REPLACE FUNCTION get_contacts_paginated(p_limit INT, p_offset INT)
 RETURNS TABLE (
     id         INTEGER,
     first_name VARCHAR,
     last_name  VARCHAR,
     email      VARCHAR,
-    birthday   DATE,
-    group_id   INTEGER,
-    created_at TIMESTAMP
+    birthday   DATE
 )
 LANGUAGE plpgsql AS $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM contacts
-    ORDER BY first_name, last_name
+    SELECT
+        c.id,
+        c.first_name,
+        c.last_name,
+        c.email,
+        c.birthday
+    FROM contacts c
+        ORDER BY c.first_name, c.last_name
     LIMIT p_limit
     OFFSET p_offset;
 END;

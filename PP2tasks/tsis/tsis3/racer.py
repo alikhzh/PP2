@@ -3,7 +3,6 @@ import random
 import time
 from persistence import load_settings
 
-# constants
 WIDTH  = 400
 HEIGHT = 600
 FPS    = 60
@@ -161,13 +160,11 @@ def play_game(screen, username):
     diff_mult = DIFF_MULT.get(settings.get("difficulty", "normal"), 1.0)
     tint      = CAR_TINTS.get(settings.get("car_color", "Default"))
 
-    # ── фон из assets ─────────────────────────────────────────────────────
     try:
         image_background = pygame.image.load('assets/AnimatedStreet.png').convert()
         image_background = pygame.transform.scale(image_background, (WIDTH, HEIGHT))
     except Exception as e:
         print(f"[WARNING] AnimatedStreet.png: {e}")
-        # запасной процедурный фон
         image_background = pygame.Surface((WIDTH, HEIGHT))
         image_background.fill((70, 70, 70))
         pygame.draw.rect(image_background, (200, 200, 200), (38, 0, 4, HEIGHT))
@@ -175,7 +172,6 @@ def play_game(screen, username):
         for y in range(0, HEIGHT, 60):
             pygame.draw.rect(image_background, (255, 220, 0), (WIDTH // 2 - 4, y, 8, 36))
 
-    # ── спрайты из assets ─────────────────────────────────────────────────
     try:
         image_player = pygame.image.load('assets/Player.png').convert_alpha()
         image_player = pygame.transform.scale(image_player, (40, 70))
@@ -199,7 +195,6 @@ def play_game(screen, username):
         coin_image = pygame.Surface((30, 30), pygame.SRCALPHA)
         pygame.draw.circle(coin_image, (255, 215, 0), (15, 15), 15)
 
-    # ── музыка ────────────────────────────────────────────────────────────
     if settings.get("sound", True):
         try:
             pygame.mixer.music.stop()
@@ -218,7 +213,6 @@ def play_game(screen, username):
 
     fontt = pygame.font.SysFont("Verdana", 20)
 
-    # ── спрайты ───────────────────────────────────────────────────────────
     player = Player(image_player, tint)
     enemy  = Enemy(image_enemy)
     coin   = Coin(coin_image)
@@ -255,7 +249,6 @@ def play_game(screen, username):
     while running:
         now = pygame.time.get_ticks()
 
-        # ── события ───────────────────────────────────────────────────────
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -264,7 +257,6 @@ def play_game(screen, username):
                 if active_pu != "nitro":
                     player.speed = base_speed
 
-        # ── спавн препятствий ─────────────────────────────────────────────
         if now - last_obstacle > OBSTACLE_INTERVAL:
             obs = Obstacle()
             attempts = 0
@@ -276,7 +268,6 @@ def play_game(screen, username):
             last_obstacle = now
             OBSTACLE_INTERVAL = max(800, OBSTACLE_INTERVAL - 40)
 
-        # ── спавн пауэр-апа ───────────────────────────────────────────────
         if now - last_powerup > POWERUP_INTERVAL and len(powerup_sprites) == 0:
             kind = random.choice(["nitro", "shield", "repair"])
             pu = PowerUp(kind)
@@ -284,14 +275,12 @@ def play_game(screen, username):
             all_sprites.add(pu)
             last_powerup = now
 
-        # ── спавн nitro-полосы ────────────────────────────────────────────
         if now - last_nitro > NITRO_INTERVAL:
             ns = NitroStrip()
             nitro_sprites.add(ns)
             all_sprites.add(ns)
             last_nitro = now
 
-        # ── истечение пауэр-апов ──────────────────────────────────────────
         for pu in list(powerup_sprites):
             if pu.expired():
                 pu.kill()
@@ -303,7 +292,6 @@ def play_game(screen, username):
             player.speed = base_speed if active_pu != "nitro" else base_speed + 4
             oil_slow = False
 
-        # ── движение ─────────────────────────────────────────────────────
         player.move()
         enemy.move()
         for obs in obstacle_sprites:
@@ -315,7 +303,6 @@ def play_game(screen, username):
             if ns.rect.top > HEIGHT:
                 ns.kill()
 
-        # ── коллизия с монетой ────────────────────────────────────────────
         if pygame.sprite.spritecollideany(player, coin_sprites):
             collected += coin.size
             if collected // N > last_speedup:
@@ -323,7 +310,6 @@ def play_game(screen, username):
                 last_speedup = collected // N
             coin.generate_random_rect()
 
-        # ── коллизия с препятствием ───────────────────────────────────────
         hit_obs = pygame.sprite.spritecollideany(player, obstacle_sprites)
         if hit_obs:
             if hit_obs.kind == "barrier":
@@ -340,7 +326,6 @@ def play_game(screen, username):
                     player.speed = max(2, player.speed - 2)
                 hit_obs.kill()
 
-        # ── коллизия с врагом ─────────────────────────────────────────────
         if pygame.sprite.spritecollideany(player, enemy_sprites):
             if player.shield:
                 player.shield = False
@@ -349,7 +334,6 @@ def play_game(screen, username):
             else:
                 running = False
 
-        # ── подбор пауэр-апа ─────────────────────────────────────────────
         hit_pu = pygame.sprite.spritecollideany(player, powerup_sprites)
         if hit_pu:
             if hit_pu.kind == "nitro":
@@ -364,7 +348,6 @@ def play_game(screen, username):
                     obs.kill()
             hit_pu.kill()
 
-        # ── nitro-полоса ──────────────────────────────────────────────────
         if pygame.sprite.spritecollideany(player, nitro_sprites):
             if active_pu != "nitro":
                 player.speed = base_speed + 3
@@ -372,7 +355,6 @@ def play_game(screen, username):
 
         distance += player.speed * 0.05
 
-        # ── отрисовка ─────────────────────────────────────────────────────
         bg_y = (bg_y + 5) % HEIGHT
         screen.blit(image_background, (0, bg_y - HEIGHT))
         screen.blit(image_background, (0, bg_y))
@@ -391,7 +373,6 @@ def play_game(screen, username):
         pygame.display.flip()
         clock.tick(FPS)
 
-    # ── конец игры ────────────────────────────────────────────────────────
     if sound_crash:
         sound_crash.play()
     pygame.mixer.music.stop()

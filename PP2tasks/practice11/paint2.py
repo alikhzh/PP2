@@ -509,10 +509,8 @@ class PaintApp:
             mouse_canvas = self.to_canvas(pygame.mouse.get_pos())
             self._draw_preview(self.screen, self.start_pos, mouse_canvas)
 
-        # Toolbar (drawn last so it sits on top)
         self.toolbar.draw(self.screen, self.active_tool, self.active_colour, self.active_size)
 
-        # Status bar at the very bottom of the toolbar
         mx, my  = pygame.mouse.get_pos()
         cx, cy  = self.to_canvas((mx, my))
         tool_lbl = TOOL_LABELS.get(self.active_tool, "")
@@ -524,9 +522,6 @@ class PaintApp:
         pygame.display.flip()
 
 
-# ──────────────────────────────────────────────
-# ENTRY POINT
-# ──────────────────────────────────────────────
 if __name__ == "__main__":
     app = PaintApp()
     app.run()

@@ -128,12 +128,10 @@ def settings_screen(screen):
         title = get_font(28).render("SETTINGS", True, WHITE)
         screen.blit(title, title.get_rect(center=(W // 2, 36)))
 
-        # sound toggle
         snd_btn = pygame.Rect(W // 2 - 80, 100, 160, 36)
         draw_button(screen, f"Sound: {'ON' if s['sound'] else 'OFF'}", snd_btn,
                     snd_btn.collidepoint(mx, my))
 
-        # difficulty
         screen.blit(get_font(18).render("Difficulty:", True, GRAY), (20, 160))
         diff_rects = []
         for i, d in enumerate(diff_opts):
@@ -145,7 +143,6 @@ def settings_screen(screen):
             lbl = get_font(16).render(d, True, WHITE)
             screen.blit(lbl, lbl.get_rect(center=r.center))
 
-        # car color
         screen.blit(get_font(18).render("Car Color:", True, GRAY), (20, 240))
         color_rects = []
         for i, (name, rgb) in enumerate(color_opts):
@@ -186,7 +183,6 @@ def game_over_screen(screen, score, distance, coins):
         screen.fill(BLACK)
         title = get_font(48).render("GAME OVER", True, (255, 0, 0))
         screen.blit(title, title.get_rect(center=(W // 2, 160)))
-        # FIX: Score и Coins — разные строки с правильными значениями
         lines = [
             f"Score:    {score}",
             f"Distance: {int(distance)}m",

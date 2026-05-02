@@ -16,13 +16,13 @@ import os
 pygame.init()
 pygame.mixer.init()
 
-# 🔊 правильный путь к файлу (ВАЖНО)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 music_path = os.path.join(BASE_DIR, "background.wav")
 
 pygame.mixer.music.load(music_path)
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1)
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Snake TSIS4")
 font       = pygame.font.SysFont(None, 36)
@@ -30,10 +30,8 @@ font_small = pygame.font.SysFont(None, 28)
 font_big   = pygame.font.SysFont(None, 54)
 clock = pygame.time.Clock()
 
-# ── Try to init DB (silently fails if no Postgres available) ──────────────────
 DB_OK = db.init_db()
 
-# ── Shared helpers 
 
 def draw_button(text, rect, hover=False):
     color = (80, 80, 80) if not hover else (120, 120, 120)
@@ -42,8 +40,8 @@ def draw_button(text, rect, hover=False):
     surf = font.render(text, True, colorWHITE)
     screen.blit(surf, surf.get_rect(center=rect.center))
 
+
 def text_input_screen(prompt):
-    """Simple text input screen. Returns the entered string."""
     text = ""
     while True:
         screen.fill(colorBLACK)
@@ -70,7 +68,6 @@ def text_input_screen(prompt):
                 elif len(text) < 20 and event.unicode.isprintable():
                     text += event.unicode
 
-# ── Main Menu ────
 
 def main_menu():
     buttons = {
@@ -95,7 +92,6 @@ def main_menu():
                     if rect.collidepoint(mx, my):
                         return label
 
-# ── Leaderboard Screen ────────────────────────────────────────────────────────
 
 def leaderboard_screen():
     rows = db.get_top10() if DB_OK else []
@@ -125,7 +121,6 @@ def leaderboard_screen():
                 if back_btn.collidepoint(mx, my):
                     return
 
-# ── Settings Screen 
 
 COLOR_OPTIONS = [
     ("Green",  [0, 255, 0]),
@@ -134,6 +129,7 @@ COLOR_OPTIONS = [
     ("White",  [255, 255, 255]),
     ("Orange", [255, 165, 0]),
 ]
+
 
 def settings_screen():
     settings = load_settings()
@@ -145,17 +141,14 @@ def settings_screen():
         title = font.render("SETTINGS", True, colorWHITE)
         screen.blit(title, title.get_rect(center=(WIDTH // 2, 40)))
 
-        # Grid toggle
         grid_btn = pygame.Rect(WIDTH // 2 - 80, 110, 160, 40)
         grid_label = "Grid: ON" if settings["grid"] else "Grid: OFF"
         draw_button(grid_label, grid_btn, hover=grid_btn.collidepoint(mx, my))
 
-        # Sound toggle
         snd_btn = pygame.Rect(WIDTH // 2 - 80, 170, 160, 40)
         snd_label = "Sound: ON" if settings["sound"] else "Sound: OFF"
         draw_button(snd_label, snd_btn, hover=snd_btn.collidepoint(mx, my))
 
-        # Snake color picker
         clr_lbl = font_small.render("Snake Color:", True, colorWHITE)
         screen.blit(clr_lbl, (40, 240))
         color_rects = []
@@ -186,11 +179,10 @@ def settings_screen():
                     if r.collidepoint(mx, my):
                         settings["snake_color"] = COLOR_OPTIONS[idx][1]
 
-# ── Game Over Screen ──────────────────────────────────────────────────────────
 
 def game_over_screen(score, level, personal_best):
-    retry_btn   = pygame.Rect(WIDTH // 2 - 110, 380, 200, 50)
-    menu_btn    = pygame.Rect(WIDTH // 2 - 110, 450, 200, 50)
+    retry_btn = pygame.Rect(WIDTH // 2 - 110, 380, 200, 50)
+    menu_btn  = pygame.Rect(WIDTH // 2 - 110, 450, 200, 50)
     while True:
         mx, my = pygame.mouse.get_pos()
         screen.fill(colorBLACK)
@@ -215,18 +207,17 @@ def game_over_screen(score, level, personal_best):
                 if menu_btn.collidepoint(mx, my):
                     return "menu"
 
-# ── Main Game Loop ────────────────────────────────────────────────────────────
 
 def play_game(username):
     settings = load_settings()
     personal_best = db.get_personal_best(username) if DB_OK else 0
 
-    snake    = Snake(color=settings["snake_color"])
-    food     = Food()
+    snake     = Snake(color=settings["snake_color"])
+    food      = Food()
     obstacles = []
-    powerup  = None
-    last_powerup_spawn = pygame.time.get_ticks()
-    POWERUP_SPAWN_INTERVAL = 10000  # try to spawn every 10 s
+    powerup   = None
+    last_powerup_spawn     = pygame.time.get_ticks()
+    POWERUP_SPAWN_INTERVAL = 10000
 
     food.generate_random_pos(snake.body, obstacles)
     current_time = pygame.time.get_ticks()
@@ -236,19 +227,16 @@ def play_game(username):
     while running:
         now = pygame.time.get_ticks()
 
-        # ── Level-up: add obstacles ─────────────────────────────────────────
         if snake.level != last_level:
             last_level = snake.level
             if snake.level >= OBSTACLE_START_LEVEL:
                 obstacles = generate_obstacles(snake.level, snake.body)
                 food.generate_random_pos(snake.body, obstacles)
 
-        # ── Spawn power-up if none active ───────────────────────────────────
         if powerup is None and now - last_powerup_spawn > POWERUP_SPAWN_INTERVAL:
             powerup = PowerUp(snake.body, obstacles)
             last_powerup_spawn = now
 
-        # ── Events ──────────────────────────────────────────────────────────
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit(); raise SystemExit
@@ -262,12 +250,10 @@ def play_game(username):
                 elif event.key == pygame.K_UP and snake.dy != 1:
                     snake.dx = 0;  snake.dy = -1
 
-        # ── Update ──────────────────────────────────────────────────────────
         snake.move()
         snake.check_self_collision()
         snake.check_collision(food, obstacles)
 
-        # check obstacle collision
         for obs in obstacles:
             if snake.body[0].x == obs.x and snake.body[0].y == obs.y:
                 if snake.shield_active:
@@ -275,12 +261,10 @@ def play_game(username):
                 else:
                     snake.alive = False
 
-        # food timer (original logic)
         if abs(now - food.cooldown_start) > COOLDOWN_TIME:
             food.generate_random_pos(snake.body, obstacles)
             current_time = now
 
-        # power-up pickup
         if powerup:
             head = snake.body[0]
             if head.x == powerup.pos.x and head.y == powerup.pos.y:
@@ -291,7 +275,6 @@ def play_game(username):
                 powerup = None
                 last_powerup_spawn = now
 
-        # ── Draw ────────────────────────────────────────────────────────────
         screen.fill(colorBLACK)
         if settings["grid"]:
             draw_grid(screen)
@@ -306,7 +289,6 @@ def play_game(username):
 
         clock.tick(snake.get_speed_fps())
 
-        # ── Game Over check ─────────────────────────────────────────────────
         if not snake.alive:
             if DB_OK:
                 db.save_session(username, snake.score, snake.level)
@@ -315,7 +297,6 @@ def play_game(username):
 
     return snake.score, snake.level, personal_best
 
-# ── Entry Point ──
 
 def main():
     username = text_input_screen("Enter your username:")
@@ -327,7 +308,6 @@ def main():
                 action = game_over_screen(score, level, pb)
                 if action == "menu":
                     break
-                # action == "retry" → loop back
         elif choice == "Leaderboard":
             leaderboard_screen()
         elif choice == "Settings":
@@ -335,6 +315,7 @@ def main():
         elif choice == "Quit":
             break
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()

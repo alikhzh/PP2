@@ -1,20 +1,12 @@
--- ============================================================
--- setting up the tables for the extended phonebook (TSIS 1)
--- run this once to create everything or upgrade the old tables
--- ============================================================
-
--- table for groups like family, work, etc.
 CREATE TABLE IF NOT EXISTS groups (
     id   SERIAL PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- add some basic groups to start with
 INSERT INTO groups (name) VALUES
     ('Family'), ('Work'), ('Friend'), ('Other')
 ON CONFLICT (name) DO NOTHING;
 
--- main table for people
 CREATE TABLE IF NOT EXISTS contacts (
     id         SERIAL PRIMARY KEY,
     first_name VARCHAR(50)  NOT NULL,
@@ -25,7 +17,6 @@ CREATE TABLE IF NOT EXISTS contacts (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- if the table already exists, just add the new columns so we don't lose old data
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -51,7 +42,6 @@ BEGIN
 END
 $$;
 
--- table for phone numbers. one person can have many phones
 CREATE TABLE IF NOT EXISTS phones (
     id         SERIAL PRIMARY KEY,
     contact_id INTEGER NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,

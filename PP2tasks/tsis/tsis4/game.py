@@ -4,7 +4,6 @@ import json
 from color_palette import *
 from config import *
 
-# ── Settings helpers ─────────────
 
 def load_settings():
     try:
@@ -13,11 +12,11 @@ def load_settings():
     except Exception:
         return {"snake_color": [0, 255, 0], "grid": True, "sound": False}
 
+
 def save_settings(settings):
     with open("settings.json", "w") as f:
         json.dump(settings, f, indent=4)
 
-# ── Grid drawing (original, unchanged) 
 
 def draw_grid(screen):
     for i in range(HEIGHT // CELL):
@@ -25,7 +24,6 @@ def draw_grid(screen):
             if j != 0:
                 pygame.draw.rect(screen, colorGRAY, (i * CELL, j * CELL, CELL, CELL), 1)
 
-# ── Point (original, unchanged) ──
 
 class Point:
     def __init__(self, x, y):
@@ -35,7 +33,6 @@ class Point:
     def __str__(self):
         return f"{self.x}, {self.y}"
 
-# ── Snake (original + shield/color support) ───────────────
 
 class Snake:
     def __init__(self, color=None):
@@ -46,9 +43,8 @@ class Snake:
         self.level = 1
         self.alive = True
         self.color = tuple(color) if color else colorGREEN
-        # power-up state
         self.shield_active = False
-        self.speed_boost_end = 0    # ms timestamp when effect ends (0 = inactive)
+        self.speed_boost_end = 0
         self.slow_motion_end = 0
 
     def move(self):
@@ -67,7 +63,6 @@ class Snake:
         )
         if hit_wall:
             if self.shield_active:
-                # wrap back inside arena instead of dying
                 self.body[0].x = max(0, min(self.body[0].x, WIDTH // CELL - 1))
                 self.body[0].y = max(1, min(self.body[0].y, HEIGHT // CELL - 1))
                 self.shield_active = False
@@ -94,7 +89,6 @@ class Snake:
         head = self.body[0]
         if head.x == food.pos.x and head.y == food.pos.y:
             if food.food_type == "poison":
-                # shorten by 2
                 for _ in range(2):
                     if len(self.body) > 1:
                         self.body.pop()
@@ -115,11 +109,10 @@ class Snake:
             return max(2, base - 3)
         return base
 
-# ── Food (original + poison type) 
 
 class Food:
     NORMAL_COLORS = [colorGREEN, colorBLUE, colorRED]
-    POISON_COLOR = (139, 0, 0)   # dark red
+    POISON_COLOR = (139, 0, 0)
 
     def __init__(self):
         self.n = random.randint(0, 2)
@@ -149,14 +142,14 @@ class Food:
                 self.pos.y = y
                 break
 
-# ── Power-ups 
 
 POWERUP_TYPES = ["speed", "slow", "shield"]
 POWERUP_COLORS = {
-    "speed":  (255, 165, 0),   # orange
-    "slow":   (0, 200, 255),   # cyan
-    "shield": (180, 0, 255),   # purple
+    "speed":  (255, 165, 0),
+    "slow":   (0, 200, 255),
+    "shield": (180, 0, 255),
 }
+
 
 class PowerUp:
     def __init__(self, snake_body, obstacles=None):
@@ -190,7 +183,6 @@ class PowerUp:
         elif self.kind == "shield":
             snake.shield_active = True
 
-# ── Obstacles 
 
 class Obstacle:
     def __init__(self, x, y):
@@ -201,11 +193,11 @@ class Obstacle:
         pygame.draw.rect(screen, colorGRAY, (self.x * CELL, self.y * CELL, CELL, CELL))
         pygame.draw.rect(screen, colorWHITE, (self.x * CELL, self.y * CELL, CELL, CELL), 2)
 
+
 def generate_obstacles(level, snake_body, count=None):
     if count is None:
         count = min(3 + level - OBSTACLE_START_LEVEL, 12)
     blocked = {(s.x, s.y) for s in snake_body}
-    # keep a safe zone around snake head
     head = snake_body[0]
     safe = {(head.x + dx, head.y + dy) for dx in range(-3, 4) for dy in range(-3, 4)}
     obstacles = []
@@ -219,17 +211,15 @@ def generate_obstacles(level, snake_body, count=None):
             blocked.add((x, y))
     return obstacles
 
-# ── HUD ──────
 
 def draw_hud(screen, font, snake, personal_best, powerup=None):
     now = pygame.time.get_ticks()
-    sc   = font.render(f'Score:{snake.score}', True, colorWHITE)
-    lv   = font.render(f'Lv:{snake.level}',   True, colorWHITE)
-    pb   = font.render(f'Best:{personal_best}', True, colorYELLOW)
+    sc  = font.render(f'Score:{snake.score}',    True, colorWHITE)
+    lv  = font.render(f'Lv:{snake.level}',       True, colorWHITE)
+    pb  = font.render(f'Best:{personal_best}',   True, colorYELLOW)
     screen.blit(sc, (2, 2))
     screen.blit(lv, (140, 2))
     screen.blit(pb, (240, 2))
-    # active power-up label
     labels = []
     if snake.speed_boost_end and now < snake.speed_boost_end:
         remaining = (snake.speed_boost_end - now) // 1000 + 1
